@@ -21,7 +21,9 @@ api.interceptors.response.use(
         // إعادة المحاولة مع التوكن الجديد
         return api(originalRequest);
       } catch (refreshError) {
-        // إذا فشل التجديد، توجيه المستخدم لتسجيل الدخول
+        // إذا فشل التجديد، مسح البيانات المحلية وتوجيه للدخول
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

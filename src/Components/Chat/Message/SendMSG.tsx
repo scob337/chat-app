@@ -1,23 +1,22 @@
 interface SendMSGProps {
-  content: string;   
-  avatar?: string;   
+  content: string;
 }
 
-const SendMSG = ({ content, avatar }: SendMSGProps) => {
+const SendMSG = ({ content }: SendMSGProps) => {
   return (
-    <div className="flex mb-4 cursor-pointer">
-      <div className="w-9 h-9 rounded-full flex items-center justify-center mr-2">
-        <img
-          src={
-            avatar ||
-            "https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-          }
-          alt="User Avatar"
-          className="w-8 h-8 rounded-full"
-        />
-      </div>
-      <div className="flex max-w-96 bg-gray-200 rounded-lg p-3 gap-3">
-        <p className="text-gray-700">{content}</p>
+    <div className="flex justify-end mb-2">
+      <div className="bg-green-500 text-white p-3 rounded-lg max-w-xs lg:max-w-md shadow-sm">
+       
+        <p className="text-sm -ml-1" >You</p>
+        <p className="text-sm pl-2">{content}</p>
+        <div className="flex items-center justify-end mt-1 gap-1">
+          <span className="text-xs text-green-100">
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+          <svg className="w-4 h-4 text-green-100" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+          </svg>
+        </div>
       </div>
     </div>
   );

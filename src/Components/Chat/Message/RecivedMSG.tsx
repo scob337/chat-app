@@ -1,25 +1,26 @@
 interface RecivedMSGProps {
-  content: string;   
-  sender: string;   
-  avatar?: string;   
+  content: string;
+  sender: string;
 }
 
-const RecivedMSG = ({ content, sender, avatar }: RecivedMSGProps) => {
+const RecivedMSG = ({ content, sender }: RecivedMSGProps) => {
   return (
-    <div className="flex justify-end mb-4 cursor-pointer">
-      <div className="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3 flex-col">
-        <span className="text-sm font-semibold">{sender}</span>
-        <p>{content}</p>
-      </div>
-      <div className="w-9 h-9 rounded-full flex items-center justify-center ml-2">
-        <img
-          src={
-            avatar ||
-            "https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-          }
-          alt={`${sender} Avatar`}
-          className="w-8 h-8 rounded-full"
-        />
+    <div className="flex justify-start mb-2">
+      <div className="flex items-start gap-2">
+        <div className="w-8 h-8 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
+          <img
+            src={`https://avatar.iran.liara.run/username?username=${sender}`}
+            alt={sender}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="bg-white p-3 rounded-lg max-w-xs lg:max-w-md shadow-sm border border-gray-200">
+          <p className="text-xs text-gray-500 mb-1 font-medium">{sender}</p>
+          <p className="text-sm text-gray-800">{content}</p>
+          <span className="text-xs text-gray-400 mt-1 block">
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
       </div>
     </div>
   );

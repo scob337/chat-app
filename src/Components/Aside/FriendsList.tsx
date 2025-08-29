@@ -29,28 +29,34 @@ const FriendsList = () => {
   }, [getFriends]);
 
   return (
-    <div className="flex flex-col bg-white w-[100%]">
-      <div className="overflow-y-auto h-[90vh] p-3 mb-9 pb-20 w-full">
+    <div className="flex flex-col h-full bg-white">
+      <div className="overflow-y-auto flex-1">
         {friends.map((friend) => (
           <NavLink
-          to={`/chat/${friend._id}`}
-            key={friend.phone}
+            to={`/chat/${friend._id}`}
+            key={friend._id}
+            className={({ isActive }) => 
+              `block hover:bg-gray-50 transition-colors ${
+                isActive ? 'bg-green-50 border-r-4 border-green-500' : ''
+              }`
+            }
           >
-          <div
-            className="flex items-center mb-4 cursor-pointer hover:bg-gray-100 p-2 rounded-md w-full"
-          >
-            <div className="w-12 h-12 bg-gray-300 rounded-full mr-3">
-              <img
-                src={`https://avatar.iran.liara.run/username?username=${friend.name}`}
-                alt="User Avatar"
-                className="w-12 h-12 rounded-full"
-              />
+            <div className="flex items-center p-4 border-b border-gray-100">
+              <div className="w-12 h-12 bg-gray-300 rounded-full mr-3 overflow-hidden">
+                <img
+                  src={`https://avatar.iran.liara.run/username?username=${friend.name}`}
+                  alt="User Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-medium text-gray-900 truncate">{friend.name}</h3>
+                <p className="text-sm text-gray-500 truncate">{friend.phone}</p>
+              </div>
+              <div className="text-xs text-gray-400">
+                Online
+              </div>
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold">{friend.name}</h2>
-              <p className="text-gray-600">{friend.phone}</p>
-            </div>
-          </div>
           </NavLink>
         ))}
       </div>

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { SocketProvider } from './context/SocketContext.tsx'
 import LoginPage from './Pages/Login.tsx'
 import ChatLayout from './Layouts/ChatLayout.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -35,10 +36,11 @@ const Router = createBrowserRouter([
 
 
 createRoot(document.getElementById('root')!).render(
-
   <StrictMode>
-     <AuthProvider>
-      <RouterProvider router={Router} />
+    <AuthProvider>
+      <SocketProvider>
+        <RouterProvider router={Router} />
+      </SocketProvider>
     </AuthProvider>
   </StrictMode>
 )

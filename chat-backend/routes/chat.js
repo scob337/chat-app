@@ -6,7 +6,7 @@ const Group = require('../models/Group');
 const auth = require('../middlewares/authMiddleware');
 
 // Get chat messages (both 1-to-1 and group)
-router.get('/chat/:chatId', auth, async (req, res) => {
+router.get('/:chatId', auth, async (req, res) => {
     try {
         const { chatId } = req.params;
         const { type } = req.query; // 'direct' or 'group'

@@ -3,13 +3,15 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middlewares/authMiddleware'); // إضافة middleware
 const JWT_CONFIG = {
   accessSecret: "mySuperAccessSecretKey123!",
   refreshSecret: "mySuperRefreshSecretKey456!",
-  accessExpires: "15m",
+  accessExpires: "7d",
   refreshExpires: "7d",
   bcryptSalt: 10
 };
+// Socket Token - إضافة route جديد
 
 const createAccessToken = (user) => {
   return jwt.sign({ sub: user._id }, JWT_CONFIG.accessSecret, { expiresIn: JWT_CONFIG.accessExpires });
@@ -39,7 +41,7 @@ router.post('/register', async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60 * 1000 // 15 دقيقة
+      maxAge: 7*24*60*60*1000
     });
     
     res.cookie('refreshToken', refreshToken, {
@@ -152,6 +154,31 @@ router.post('/refresh', async (req, res) => {
     return res.json({ message: 'Token refreshed' });
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token', error: err.message });
+  }
+});
+
+
+// في مسار socket-token
+router.get('/socket-token', auth, (req, res) => {
+  try {
+    const token = jwt.sign(
+      { sub: req.user.id },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.json({ token });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate socket token' });
+  }
+});
+
+// Get current user
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash -refreshToken');
+    return res.json({ user: { id: user._id, name: user.name, phone: user.phone } });
+  } catch (err) {
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
