@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // جلب اليوزر المخزن عند تحميل الصفحة
+  // يجيب اليوزر من localStorage عند تحميل الصفحة
   useEffect(() => {
     const storedUser = getCurrentUser();
     if (storedUser) {
@@ -31,13 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  // login function
+  // login
   const login = async (phone: string, password: string) => {
-    const userData = await loginService(phone, password); // نستخدم الدالة من authService
-    setUser(userData);
+    const userData = await loginService(phone, password);
+    if (userData) {
+      setUser(userData);
+    }
   };
 
-  // logout function
+  // logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -51,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook جاهز للاستخدام
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

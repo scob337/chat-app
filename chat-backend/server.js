@@ -7,6 +7,7 @@ const { initSocket } = require('./sockets/socket');
 const authRoutes = require('./routes/auth');
 const friendsRoutes = require('./routes/friends');
 const groupsRoutes = require('./routes/groups');
+const chatRoutes = require('./routes/chat');
 const cors = require('cors');
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/groups', groupsRoutes);
+app.use('/api/chat', chatRoutes);
 
 const PORT = process.env.PORT || 8080;
 

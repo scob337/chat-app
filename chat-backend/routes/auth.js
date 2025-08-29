@@ -33,7 +33,26 @@ router.post('/register', async (req, res) => {
     const refreshToken = createRefreshToken(user);
     user.refreshToken = refreshToken;
     await user.save();
-    return res.json({ message: 'User registered', user: { id: user._id, name: user.name, phone: user.phone }, tokens: { accessToken, refreshToken } });
+    
+    // تخزين التوكن في الكوكيز
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000 // 15 دقيقة
+    });
+    
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 أيام
+    });
+    
+    return res.json({ 
+      message: 'User registered', 
+      user: { id: user._id, name: user.name, phone: user.phone }
+    });
     
   } catch (err) {
     console.error(err);
@@ -54,7 +73,26 @@ router.post('/login', async (req, res) => {
     const refreshToken = createRefreshToken(user);
     user.refreshToken = refreshToken;
     await user.save();
-    return res.json({ message: 'Logged in', tokens: { accessToken, refreshToken }, user: { id: user._id, name: user.name, phone: user.phone } });
+    
+    // تخزين التوكن في الكوكيز
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000 // 15 دقيقة
+    });
+    
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 أيام
+    });
+    
+    return res.json({ 
+      message: 'Logged in', 
+      user: { id: user._id, name: user.name, phone: user.phone }
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Server error' });
@@ -64,13 +102,25 @@ router.post('/login', async (req, res) => {
 // Logout
 router.post('/logout', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ message: 'refreshToken required' });
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const user = await User.findById(decoded.sub);
-    if (!user) return res.status(400).json({ message: 'Invalid token' });
-    user.refreshToken = null;
-    await user.save();
+    const refreshToken = req.cookies.refreshToken;
+    
+    if (refreshToken) {
+      try {
+        const decoded = jwt.verify(refreshToken, JWT_CONFIG.refreshSecret);
+        const user = await User.findById(decoded.sub);
+        if (user) {
+          user.refreshToken = null;
+          await user.save();
+        }
+      } catch (err) {
+        // حتى لو كان هناك خطأ في التوكن، سنقوم بمسح الكوكيز
+      }
+    }
+    
+    // مسح الكوكيز
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    
     return res.json({ message: 'Logged out' });
   } catch (err) {
     return res.status(400).json({ message: 'Invalid token', error: err.message });
@@ -80,13 +130,26 @@ router.post('/logout', async (req, res) => {
 // Refresh
 router.post('/refresh', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies.refreshToken;
+    
     if (!refreshToken) return res.status(400).json({ message: 'refreshToken required' });
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    
+    const decoded = jwt.verify(refreshToken, JWT_CONFIG.refreshSecret);
     const user = await User.findById(decoded.sub);
+    
     if (!user || user.refreshToken !== refreshToken) return res.status(401).json({ message: 'Invalid refresh token' });
+    
     const accessToken = createAccessToken(user);
-    return res.json({ accessToken });
+    
+    // تحديث توكن الوصول في الكوكيز
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000 // 15 دقيقة
+    });
+    
+    return res.json({ message: 'Token refreshed' });
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token', error: err.message });
   }

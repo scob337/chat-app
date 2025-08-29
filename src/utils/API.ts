@@ -2,16 +2,33 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // غيّرها حسب السيرفر بتاعك
+  baseURL: "http://localhost:8080/api",
+  withCredentials: true // مهم جداً لإرسال واستقبال الكوكيز
 });
 
-// Interceptor يضيف التوكن على كل request
-api.interceptors.request.use(
-  (config) => {
-      config.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGFkZTkyMDU1ZjFkZjBkMGY1MGRkN2MiLCJpYXQiOjE3NTYyMzcyNDMsImV4cCI6MTc1NjIzODE0M30.MWi54PDMskPwah4HzEfJ2KA5TWZSt0_bBFPuDDlQgKg`;
-    return config;
-  },
-  (error) => Promise.reject(error)
+// إضافة interceptor للتعامل مع انتهاء صلاحية التوكن
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // محاولة تجديد التوكن
+        await api.post('/auth/refresh');
+        // إعادة المحاولة مع التوكن الجديد
+        return api(originalRequest);
+      } catch (refreshError) {
+        // إذا فشل التجديد، توجيه المستخدم لتسجيل الدخول
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
 );
 
 export default api;
